@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="SmartRoom.API/SmartRoom.API.csproj" />
+  <Project Path="SmartRoom.Core/SmartRoom.Core.csproj" />
+  <Project Path="SmartRoom.Data/SmartRoom.Data.csproj" />
+  <Project Path="SmartRoom.Service/SmartRoom.Service.csproj" />
+  <Project Path="SmartRoom.Tests/SmartRoom.Tests.csproj" />
+</Solution>

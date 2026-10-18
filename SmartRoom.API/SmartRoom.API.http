@@ -1,0 +1,6 @@
+@SmartRoom.API_HostAddress = http://localhost:5024
+
+GET {{SmartRoom.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
