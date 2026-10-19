@@ -481,15 +481,15 @@ SmartRoom היא מערכת Web API לשיבוץ חדרי לימוד, שבה מ�
 - [x] Enums.
 - [x] ישויות מפרק 3, כולל ירושת החדרים ו-Version על המשבצת.
 - [x] מחלקת התוצאה וחריגת ההתנגשות של Core.
-- [ ] DTOs עם Data Annotations, ומחלקות Options.
+- [x] DTOs עם Data Annotations, ומחלקות Options.
   - [x] Auth, Common, Rooms.
   - [x] Slots, Bookings, Users.
-  - [ ] מחלקות Options. ← ממשיכים מכאן
-- [ ] ממשקי Repositories ו-Services (אחרי ה-DTOs, כי הממשקים משתמשים בהם).
+  - [x] מחלקות Options.
+- [x] ממשקי Repositories ו-Services (אחרי ה-DTOs, כי הממשקים משתמשים בהם).
 
 ### שלב 2 — Data ובסיס הנתונים
 
-- [ ] AppDbContext עם DbSet לכל ישות.
+- [ ] AppDbContext עם DbSet לכל ישות. ← ממשיכים מכאן
 - [ ] מחלקות Configuration לכל ישות (קשרים, TPH, אינדקסים, Seed קבוע).
 - [ ] דריסת השמירה שמחליפה את Version.
 - [ ] רישום ה-DbContext ב-Program עם מחרוזת חיבור מהקונפיגורציה.
