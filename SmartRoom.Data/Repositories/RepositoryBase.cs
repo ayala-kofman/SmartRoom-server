@@ -36,6 +36,8 @@ public abstract class RepositoryBase
         ex.InnerException is PostgresException
         {
             SqlState: PostgresErrorCodes.UniqueViolation,
-            ConstraintName: BookingConfiguration.ActiveBookingIndexName or RoomSlotConfiguration.UniqueSlotIndexName
+            ConstraintName: BookingConfiguration.ActiveBookingIndexName
+                or RoomSlotConfiguration.UniqueSlotIndexName
+                or UserConfiguration.UniqueIdentityNumberIndexName
         };
 }

@@ -6,12 +6,17 @@ namespace SmartRoom.Data.Configurations;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {
+    /// <summary>EF's default name, kept explicit so a race on the same ID number can be recognized.</summary>
+    public const string UniqueIdentityNumberIndexName = "IX_Users_IdentityNumber";
+
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.Property(u => u.FullName).IsRequired().HasMaxLength(100);
 
         builder.Property(u => u.IdentityNumber).IsRequired().HasMaxLength(9);
-        builder.HasIndex(u => u.IdentityNumber).IsUnique();
+        builder.HasIndex(u => u.IdentityNumber)
+            .IsUnique()
+            .HasDatabaseName(UniqueIdentityNumberIndexName);
 
         builder.Property(u => u.Role).HasConversion<string>().HasMaxLength(20);
 

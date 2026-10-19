@@ -11,6 +11,16 @@ builder.Services.AddServiceLayer(builder.Configuration["AutoMapper:LicenseKey"])
 builder.Services.Configure<BookingRulesOptions>(builder.Configuration.GetSection(BookingRulesOptions.SectionName));
 builder.Services.Configure<PagingOptions>(builder.Configuration.GetSection(PagingOptions.SectionName));
 
+// The signing key comes from User Secrets; stop at startup with a clear message if it is missing or too short.
+builder.Services.AddOptions<JwtOptions>()
+    .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
+    .Validate(o => o.Key.Length >= 32,
+        "Jwt:Key is missing or shorter than 32 characters. Set it with: " +
+        "dotnet user-secrets set \"Jwt:Key\" \"<at least 32 characters>\" --project SmartRoom.API")
+    .Validate(o => !string.IsNullOrWhiteSpace(o.Issuer) && !string.IsNullOrWhiteSpace(o.Audience),
+        "Jwt:Issuer and Jwt:Audience must be set in appsettings.json.")
+    .ValidateOnStart();
+
 // Injected clock, so tests can fake "now" (tomorrow-only, no changes in the past).
 builder.Services.AddSingleton(TimeProvider.System);
 

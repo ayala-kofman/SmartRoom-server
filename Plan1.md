@@ -468,11 +468,11 @@ SmartRoom היא מערכת Web API לשיבוץ חדרי לימוד, שבה מ�
 
 ### שלב 0 — הקמה
 
-- [ ] יצירת שני repositories ב-GitHub: שרת ולקוח.
-- [ ] יצירת solution וחמשת הפרויקטים מפרק 4.
-- [ ] הגדרת הפניות בין הפרויקטים לפי כיוון התלויות בלבד.
-- [ ] קובץ gitignore תקין (bin, obj, logs, קבצי סודות).
-- [ ] הפעלת User Secrets בפרויקט API והכנסת מחרוזת החיבור ומפתח ה-JWT.
+- [x] יצירת שני repositories ב-GitHub: שרת ולקוח. (SmartRoom-server ו-SmartRoom)
+- [x] יצירת solution וחמשת הפרויקטים מפרק 4.
+- [x] הגדרת הפניות בין הפרויקטים לפי כיוון התלויות בלבד.
+- [x] קובץ gitignore תקין (bin, obj, logs, קבצי סודות).
+- [x] הפעלת User Secrets בפרויקט API והכנסת מחרוזת החיבור ומפתח ה-JWT.
 
 הושלם כאשר: ה-solution מתקמפל ו-Core ללא שום חבילה חיצונית.
 
@@ -504,12 +504,13 @@ SmartRoom היא מערכת Web API לשיבוץ חדרי לימוד, שבה מ�
 - [x] AutoMapper Profiles. (AutoMapper 16.2.0; מפתח הרישיון ב-User Secrets תחת AutoMapper:LicenseKey)
 - [x] RoomService, SlotService, BookingPeriodService (+ BookingWindowService, ReferenceDataService). חדר שחוזר לפעיל מקבל מיד משבצות לתקופות הפתוחות.
 - [x] BookingService — כל הכללים מפרק 5 והזרימה מפרק 7. תלמידה בלי תאריך מקבלת את היום; גם מזכירה לא מבטלת היום/עבר; ביטול חוזר = 409.
-- [ ] UserService ← ממשיכים מכאן.
+- [x] UserService — יצירת מורה/תלמידה ורשימת משתמשים. ת"ז קיימת = 409, גם במרוץ (האינדקס הייחודי מתורגם ל-409).
 
 ### שלב 4 — אבטחה
 
-- [ ] מחלקת אימות ת"ז ומחלקת יצירת JWT.
-- [ ] AuthService: הרשמה והתחברות.
+- [x] מחלקת אימות ת"ז (הוקדמה לשלב 3, בשביל UserService).
+- [x] מחלקת יצירת JWT (Singleton; בדיקת מפתח ≥32 תווים בעלייה).
+- [ ] AuthService: הרשמה והתחברות. ← ממשיכים מכאן.
 - [ ] רישום Authentication ו-Authorization ב-Program.
 - [ ] הגדרת Swagger עם תמיכה ב-JWT.
 
