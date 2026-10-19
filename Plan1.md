@@ -262,7 +262,7 @@ SmartRoom היא מערכת Web API לשיבוץ חדרי לימוד, שבה מ�
 
 | Method | נתיב | מי | מקור קלט | סטטוסים |
 | --- | --- | --- | --- | --- |
-| POST | api/users | מזכירה (יצירת מורה עם כיתות) | Body | 201, 400, 409 |
+| POST | api/users | מזכירה (יצירת מורה עם כיתות, או תלמידה עם כיתה) | Body | 201, 400, 409 |
 | GET | api/users | מזכירה | Query: role, עמוד | 200 |
 | GET | api/class-groups | מחוברים (ופתוח להרשמה) | — | 200 |
 | GET | api/lesson-periods | מחוברים | — | 200 |
@@ -483,8 +483,8 @@ SmartRoom היא מערכת Web API לשיבוץ חדרי לימוד, שבה מ�
 - [x] מחלקת התוצאה וחריגת ההתנגשות של Core.
 - [ ] DTOs עם Data Annotations, ומחלקות Options.
   - [x] Auth, Common, Rooms.
-  - [ ] Slots, Bookings, Users. ← ממשיכים מכאן
-  - [ ] מחלקות Options.
+  - [x] Slots, Bookings, Users.
+  - [ ] מחלקות Options. ← ממשיכים מכאן
 - [ ] ממשקי Repositories ו-Services (אחרי ה-DTOs, כי הממשקים משתמשים בהם).
 
 ### שלב 2 — Data ובסיס הנתונים
