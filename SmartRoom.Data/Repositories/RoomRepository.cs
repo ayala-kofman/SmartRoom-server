@@ -54,6 +54,9 @@ public class RoomRepository : RepositoryBase, IRoomRepository
     public Task<bool> HasAnyBookingsAsync(int roomId, CancellationToken ct) =>
         Db.Bookings.AnyAsync(b => b.RoomSlot.RoomId == roomId, ct);
 
+    public async Task<IReadOnlyList<int>> GetActiveRoomIdsAsync(CancellationToken ct) =>
+        await Db.Rooms.Where(r => r.Status == RoomStatus.Active).Select(r => r.Id).ToListAsync(ct);
+
     public async Task AddAsync(Room room, CancellationToken ct) => await Db.Rooms.AddAsync(room, ct);
 
     public void Remove(Room room) => Db.Rooms.Remove(room);

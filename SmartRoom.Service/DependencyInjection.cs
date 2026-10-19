@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using SmartRoom.Core.Interfaces.Services;
+using SmartRoom.Service.Services;
 
 namespace SmartRoom.Service;
 
@@ -12,6 +14,13 @@ public static class DependencyInjection
     {
         // Scans every Profile in this project (Mapping folder).
         services.AddAutoMapper(cfg => cfg.LicenseKey = autoMapperLicenseKey, typeof(DependencyInjection).Assembly);
+
+        services.AddScoped<IBookingWindowService, BookingWindowService>();
+        services.AddScoped<IRoomService, RoomService>();
+        services.AddScoped<IRoomSlotService, RoomSlotService>();
+        services.AddScoped<IBookingPeriodService, BookingPeriodService>();
+        services.AddScoped<IReferenceDataService, ReferenceDataService>();
+        services.AddScoped<IBookingService, BookingService>();
 
         return services;
     }

@@ -502,9 +502,9 @@ SmartRoom היא מערכת Web API לשיבוץ חדרי לימוד, שבה מ�
 ### שלב 3 — Service ו-AutoMapper
 
 - [x] AutoMapper Profiles. (AutoMapper 16.2.0; מפתח הרישיון ב-User Secrets תחת AutoMapper:LicenseKey)
-- [ ] RoomService, SlotService, BookingPeriodService. ← ממשיכים מכאן
-- [ ] BookingService עם כל הכללים מפרק 5 והזרימה מפרק 7.
-- [ ] UserService.
+- [x] RoomService, SlotService, BookingPeriodService (+ BookingWindowService, ReferenceDataService). חדר שחוזר לפעיל מקבל מיד משבצות לתקופות הפתוחות.
+- [x] BookingService — כל הכללים מפרק 5 והזרימה מפרק 7. תלמידה בלי תאריך מקבלת את היום; גם מזכירה לא מבטלת היום/עבר; ביטול חוזר = 409.
+- [ ] UserService ← ממשיכים מכאן.
 
 ### שלב 4 — אבטחה
 

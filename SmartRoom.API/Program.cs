@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDataLayer(builder.Configuration);
 builder.Services.AddServiceLayer(builder.Configuration["AutoMapper:LicenseKey"]);
 builder.Services.Configure<BookingRulesOptions>(builder.Configuration.GetSection(BookingRulesOptions.SectionName));
+builder.Services.Configure<PagingOptions>(builder.Configuration.GetSection(PagingOptions.SectionName));
 
 // Injected clock, so tests can fake "now" (tomorrow-only, no changes in the past).
 builder.Services.AddSingleton(TimeProvider.System);

@@ -22,6 +22,9 @@ public interface IRoomRepository
     /// <summary>True if the room has any booking at all, past or cancelled included (blocks delete, rule 9).</summary>
     Task<bool> HasAnyBookingsAsync(int roomId, CancellationToken ct);
 
+    /// <summary>Ids of the active rooms; a new booking period creates slots only for these (rule 11).</summary>
+    Task<IReadOnlyList<int>> GetActiveRoomIdsAsync(CancellationToken ct);
+
     Task AddAsync(Room room, CancellationToken ct);
     void Remove(Room room);
 
