@@ -24,7 +24,6 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
 
         // Quality stays an int, so "best quality first" sorts correctly in SQL.
         builder.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
-
     }
 }
 

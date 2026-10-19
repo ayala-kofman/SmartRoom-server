@@ -16,6 +16,6 @@ public interface IRoomService
 
     Task<Result> UpdateAsync(int id, UpdateRoomRequest request, CancellationToken ct);
 
-    /// <summary>NotFound, or Conflict if the room has future active bookings.</summary>
+    /// <summary>Rule 9: only a Closed room with no bookings at all can be deleted. NotFound, or Conflict otherwise.</summary>
     Task<Result> DeleteAsync(int id, CancellationToken ct);
 }

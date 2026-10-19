@@ -19,8 +19,8 @@ public interface IRoomRepository
     /// <summary>True if another room already uses this number (excludeRoomId skips the room being updated).</summary>
     Task<bool> RoomNumberExistsAsync(string roomNumber, int? excludeRoomId, CancellationToken ct);
 
-    /// <summary>True if the room has an active booking on or after the given date (blocks delete, 409).</summary>
-    Task<bool> HasActiveBookingsFromAsync(int roomId, DateOnly fromDate, CancellationToken ct);
+    /// <summary>True if the room has any booking at all, past or cancelled included (blocks delete, rule 9).</summary>
+    Task<bool> HasAnyBookingsAsync(int roomId, CancellationToken ct);
 
     Task AddAsync(Room room, CancellationToken ct);
     void Remove(Room room);

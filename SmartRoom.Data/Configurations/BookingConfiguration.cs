@@ -6,6 +6,8 @@ namespace SmartRoom.Data.Configurations;
 
 public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 {
+    public const string ActiveBookingIndexName = "IX_Bookings_RoomSlotId_Active";
+
     public void Configure(EntityTypeBuilder<Booking> builder)
     {
         builder.Property(b => b.Note).HasMaxLength(200);
@@ -14,7 +16,7 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasIndex(b => b.RoomSlotId)
             .IsUnique()
             .HasFilter("\"IsActive\" = TRUE")
-            .HasDatabaseName("IX_Bookings_RoomSlotId_Active");
+            .HasDatabaseName(ActiveBookingIndexName);
 
         builder.HasIndex(b => b.TeacherId);
         builder.HasIndex(b => b.ClassGroupId);
