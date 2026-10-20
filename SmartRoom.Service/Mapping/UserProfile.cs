@@ -1,5 +1,4 @@
 using AutoMapper;
-using SmartRoom.Core.DTOs.Auth;
 using SmartRoom.Core.DTOs.Users;
 using SmartRoom.Core.Entities;
 
@@ -16,12 +15,8 @@ public class UserProfile : Profile
 
         CreateMap<ClassGroup, ClassGroupDto>();
 
-        // Open registration is for students only: the service sets Role = Student, never the client.
-        CreateMap<RegisterRequest, User>()
-            .IgnoreUserKeysAndLinks()
-            .ForMember(d => d.Role, o => o.Ignore());
-
         // The service rejects Role = Secretary and attaches the taught classes (ClassGroupIds) itself.
+        // Open registration (RegisterRequest) goes through the same path as a CreateUserRequest with Role = Student.
         CreateMap<CreateUserRequest, User>()
             .IgnoreUserKeysAndLinks();
     }

@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IReferenceDataService, ReferenceDataService>();
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         // Stateless, so one instance serves everyone.
         services.AddSingleton<IIdentityNumberValidator, IdentityNumberValidator>();

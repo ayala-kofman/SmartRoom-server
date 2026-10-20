@@ -1,3 +1,9 @@
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using SmartRoom.Core.Options;
 using SmartRoom.Data;
 using SmartRoom.Data.Seed;
@@ -20,6 +26,38 @@ builder.Services.AddOptions<JwtOptions>()
     .Validate(o => !string.IsNullOrWhiteSpace(o.Issuer) && !string.IsNullOrWhiteSpace(o.Audience),
         "Jwt:Issuer and Jwt:Audience must be set in appsettings.json.")
     .ValidateOnStart();
+
+// Validates the token the generator writes: signature, issuer, audience and expiry,
+// using the same validated JwtOptions, so the key is read from one place.
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtOptions>>((bearer, jwtOptions) =>
+    {
+        var jwt = jwtOptions.Value;
+        bearer.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
+            ValidateIssuer = true,
+            ValidIssuer = jwt.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwt.Audience,
+            ValidateLifetime = true,
+            // An expired token is rejected right away (the default allows 5 more minutes).
+            ClockSkew = TimeSpan.Zero,
+            // Same claim types the generator writes, so [Authorize(Roles = "...")] works.
+            NameClaimType = ClaimTypes.Name,
+            RoleClaimType = ClaimTypes.Role
+        };
+    });
+
+// Every endpoint requires a logged-in user unless it is marked [AllowAnonymous] (register, login).
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 // Injected clock, so tests can fake "now" (tomorrow-only, no changes in the past).
 builder.Services.AddSingleton(TimeProvider.System);
@@ -46,6 +84,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
