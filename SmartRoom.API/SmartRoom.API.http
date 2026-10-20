@@ -1,6 +1,17 @@
 @SmartRoom.API_HostAddress = http://localhost:5024
 
-GET {{SmartRoom.API_HostAddress}}/weatherforecast/
+# Open endpoint: the class list for the registration form.
+GET {{SmartRoom.API_HostAddress}}/api/class-groups
 Accept: application/json
+
+###
+
+# Login as the seeded secretary; copy the token from the response.
+POST {{SmartRoom.API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "identityNumber": "100000009"
+}
 
 ###

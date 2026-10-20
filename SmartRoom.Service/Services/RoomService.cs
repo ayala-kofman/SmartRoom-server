@@ -61,7 +61,7 @@ public class RoomService : IRoomService
             return Result<RoomDto>.ValidationError(capacityError);
 
         if (await _rooms.RoomNumberExistsAsync(request.RoomNumber, null, ct))
-            return Result<RoomDto>.Conflict($"Room number {request.RoomNumber} already exists.");
+            return Result<RoomDto>.Conflict($"Room number {request.RoomNumber} already exists.", ErrorCodes.RoomNumberTaken);
 
         var features = await _referenceData.GetFeaturesByIdsAsync(request.FeatureIds.Distinct(), ct);
         if (features.Count != request.FeatureIds.Distinct().Count())
@@ -92,7 +92,7 @@ public class RoomService : IRoomService
             return Result.ValidationError(capacityError);
 
         if (await _rooms.RoomNumberExistsAsync(request.RoomNumber, id, ct))
-            return Result.Conflict($"Room number {request.RoomNumber} already exists.");
+            return Result.Conflict($"Room number {request.RoomNumber} already exists.", ErrorCodes.RoomNumberTaken);
 
         var features = await _referenceData.GetFeaturesByIdsAsync(request.FeatureIds.Distinct(), ct);
         if (features.Count != request.FeatureIds.Distinct().Count())
@@ -120,11 +120,11 @@ public class RoomService : IRoomService
             return Result.NotFound($"Room {id} was not found.");
 
         if (room.Status != RoomStatus.Closed)
-            return Result.Conflict("Only a closed room can be deleted. Close the room first.");
+            return Result.Conflict("Only a closed room can be deleted. Close the room first.", ErrorCodes.RoomNotClosed);
 
         // Bookings are history, even past or cancelled ones; a room with any booking stays closed (rule 9).
         if (await _rooms.HasAnyBookingsAsync(id, ct))
-            return Result.Conflict("The room has bookings and cannot be deleted. It stays closed.");
+            return Result.Conflict("The room has bookings and cannot be deleted. It stays closed.", ErrorCodes.RoomHasBookings);
 
         // Its slots (all without bookings) are deleted with it by cascade.
         _rooms.Remove(room);

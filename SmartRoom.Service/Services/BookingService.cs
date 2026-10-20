@@ -75,16 +75,16 @@ public class BookingService : IBookingService
             return Result<BookingDto>.Forbidden("You can book only for a class you teach.");
 
         if (slot.Status != SlotStatus.Available)
-            return Result<BookingDto>.Conflict(SlotTakenMessage);
+            return Result<BookingDto>.Conflict(SlotTakenMessage, ErrorCodes.SlotTaken);
 
         if (slot.Room.Status != RoomStatus.Active)
-            return Result<BookingDto>.Conflict("The room is not active and cannot be booked.");
+            return Result<BookingDto>.Conflict("The room is not active and cannot be booked.", ErrorCodes.RoomNotActive);
 
         if (await _bookings.TeacherHasBookingAtAsync(currentUser.Id, slot.Date, slot.LessonPeriodId, ct))
-            return Result<BookingDto>.Conflict("You already have a room booked for this lesson.");
+            return Result<BookingDto>.Conflict("You already have a room booked for this lesson.", ErrorCodes.TeacherBusy);
 
         if (await _bookings.ClassHasBookingAtAsync(classGroupId, slot.Date, slot.LessonPeriodId, ct))
-            return Result<BookingDto>.Conflict("This class already has a room booked for this lesson.");
+            return Result<BookingDto>.Conflict("This class already has a room booked for this lesson.", ErrorCodes.ClassBusy);
 
         // 3. The slot becomes booked and a booking is added.
         var booking = _mapper.Map<Booking>(request);
@@ -106,7 +106,7 @@ public class BookingService : IBookingService
             _logger.LogWarning(
                 "Booking conflict: slot {SlotId} was taken before teacher {TeacherId} could save.",
                 slotId, currentUser.Id);
-            return Result<BookingDto>.Conflict(SlotTakenMessage);
+            return Result<BookingDto>.Conflict(SlotTakenMessage, ErrorCodes.SlotTaken);
         }
 
         // Reloaded to get the teacher and class names for the DTO.
@@ -168,7 +168,7 @@ public class BookingService : IBookingService
             return Result.Forbidden("You can cancel only your own bookings.");
 
         if (!booking.IsActive)
-            return Result.Conflict("The booking is already cancelled.");
+            return Result.Conflict("The booking is already cancelled.", ErrorCodes.AlreadyCancelled);
 
         // Rule 7: until the end of the day before the lesson. Nothing changes today or in the past, for anyone.
         if (booking.RoomSlot.Date <= _window.GetToday())
@@ -187,7 +187,9 @@ public class BookingService : IBookingService
             _logger.LogWarning(
                 "Cancel conflict: slot {SlotId} of booking {BookingId} was changed before user {UserId} could save.",
                 booking.RoomSlotId, id, currentUser.Id);
-            return Result.Conflict("The booking was changed by someone else a moment ago. Please refresh and try again.");
+            return Result.Conflict(
+                "The booking was changed by someone else a moment ago. Please refresh and try again.",
+                ErrorCodes.ConcurrentChange);
         }
 
         return Result.Success();

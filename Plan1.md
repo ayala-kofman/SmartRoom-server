@@ -512,13 +512,13 @@ SmartRoom היא מערכת Web API לשיבוץ חדרי לימוד, שבה מ�
 - [x] מחלקת יצירת JWT (Singleton; בדיקת מפתח ≥32 תווים בעלייה).
 - [x] AuthService: הרשמה והתחברות. (הרשמה עוברת דרך UserService עם Role=Student; כשלון התחברות = 401 עם הודעה אחידה)
 - [x] רישום Authentication ו-Authorization ב-Program. (FallbackPolicy: כל endpoint דורש התחברות, פתיחה ב-AllowAnonymous; ClockSkew = 0)
-- [ ] הגדרת Swagger עם תמיכה ב-JWT. ← ממשיכים מכאן.
+- [x] הגדרת Swagger עם תמיכה ב-JWT. (כפתור Authorize, Bearer; תיעוד סטטוסים לכל פעולה — בשלב 5)
 
 ### שלב 5 — API
 
-- [ ] מנגנון אחד להמרת תוצאת Service לסטטוס HTTP.
-- [ ] כל ה-Controllers לפי פרק 6, עם Roles ומקורות קלט נכונים.
-- [ ] בדיקה ידנית ב-Swagger של כל endpoint וכל סטטוס.
+- [x] מנגנון אחד להמרת תוצאת Service לסטטוס HTTP. (ApiControllerBase: FromResult / FromCreated / CurrentUser; ErrorResponse; קודי שגיאה ב-Result דרך ErrorCodes)
+- [x] כל ה-Controllers לפי פרק 6, עם Roles ומקורות קלט נכונים. (7 controllers + AppRoles; enums כטקסט; Location של booking-periods מפנה לרשימה; בדיקה אוטומטית 37/37)
+- [ ] בדיקה ידנית ב-Swagger של כל endpoint וכל סטטוס. ← ממשיכים מכאן.
 
 ### שלב 6 — Concurrency (הלב)
 

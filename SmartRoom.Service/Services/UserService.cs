@@ -69,7 +69,7 @@ public class UserService : IUserService
             return Result<UserDto>.ValidationError("One or more class group ids do not exist.");
 
         if (await _users.IdentityNumberExistsAsync(request.IdentityNumber, ct))
-            return Result<UserDto>.Conflict(IdentityNumberTakenMessage);
+            return Result<UserDto>.Conflict(IdentityNumberTakenMessage, ErrorCodes.IdentityNumberTaken);
 
         var user = _mapper.Map<User>(request);
         user.CreatedAt = _time.GetUtcNow().UtcDateTime;
@@ -92,7 +92,7 @@ public class UserService : IUserService
         catch (ConcurrencyConflictException)
         {
             // Another request saved the same ID number between the check and the save (unique index).
-            return Result<UserDto>.Conflict(IdentityNumberTakenMessage);
+            return Result<UserDto>.Conflict(IdentityNumberTakenMessage, ErrorCodes.IdentityNumberTaken);
         }
 
         // The ID number is never logged; the user id is enough.
