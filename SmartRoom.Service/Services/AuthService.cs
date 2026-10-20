@@ -71,7 +71,11 @@ public class AuthService : IAuthService
             UserId = user.Id,
             FullName = user.FullName,
             Role = user.Role,
-            ClassGroupId = user.ClassGroupId
+            ClassGroupId = user.ClassGroupId,
+            TaughtClassGroups = user.TaughtClassGroups
+                .OrderBy(c => c.Grade).ThenBy(c => c.Name)
+                .Select(c => new ClassGroupDto { Id = c.Id, Name = c.Name, Grade = c.Grade })
+                .ToList()
         });
     }
 }

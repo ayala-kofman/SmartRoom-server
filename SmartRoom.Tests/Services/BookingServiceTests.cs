@@ -37,14 +37,15 @@ public class BookingServiceTests
         _users.Setup(u => u.TeacherTeachesClassAsync(TeacherId, ClassGroupId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
     }
 
-    private static RoomSlot Slot(DateOnly date, SlotStatus status = SlotStatus.Available, RoomStatus roomStatus = RoomStatus.Active) => new()
+    private static RoomSlot Slot(
+        DateOnly date, SlotStatus status = SlotStatus.Available, RoomStatus roomStatus = RoomStatus.Active, TimeOnly? startTime = null) => new()
     {
         Id = SlotId,
         RoomId = 1,
         Room = new RegularRoom { Id = 1, RoomNumber = "101", Name = "Room 101", Status = roomStatus, SeatCount = 30 },
         Date = date,
         LessonPeriodId = 2,
-        LessonPeriod = new LessonPeriod { Id = 2 },
+        LessonPeriod = new LessonPeriod { Id = 2, LessonNumber = 2, StartTime = startTime ?? new TimeOnly(8, 50), EndTime = (startTime ?? new TimeOnly(8, 50)).AddMinutes(45) },
         Status = status
     };
 
@@ -171,14 +172,14 @@ public class BookingServiceTests
 
     // ---- Cancel ----
 
-    private Booking GivenBooking(int teacherId, DateOnly lessonDate)
+    private Booking GivenBooking(int teacherId, DateOnly lessonDate, TimeOnly? startTime = null)
     {
         var booking = new Booking
         {
             Id = 7,
             TeacherId = teacherId,
             RoomSlotId = SlotId,
-            RoomSlot = Slot(lessonDate, SlotStatus.Booked),
+            RoomSlot = Slot(lessonDate, SlotStatus.Booked, startTime: startTime),
             ClassGroupId = ClassGroupId,
             IsActive = true
         };
@@ -197,17 +198,32 @@ public class BookingServiceTests
         _bookings.Verify(b => b.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    // The clock is Wednesday 10:00 (Israel).
     [Theory]
-    [InlineData(0)]  // the lesson is today
-    [InlineData(-1)] // the lesson was yesterday
-    public async Task CancelAsync_LessonTodayOrInThePast_ReturnsValidationError(int daysFromToday)
+    [InlineData(0, 8, 50)]  // today, the lesson started at 08:50
+    [InlineData(0, 10, 0)]  // today, the lesson starts right now
+    [InlineData(-1, 12, 0)] // yesterday
+    public async Task CancelAsync_LessonAlreadyStartedOrInThePast_ReturnsValidationError(int daysFromToday, int hour, int minute)
     {
-        GivenBooking(TeacherId, TestHelpers.Today.AddDays(daysFromToday));
+        GivenBooking(TeacherId, TestHelpers.Today.AddDays(daysFromToday), new TimeOnly(hour, minute));
 
         var result = await _service.CancelAsync(7, Teacher, CancellationToken.None);
 
         Assert.Equal(ResultStatus.ValidationError, result.Status);
         _bookings.Verify(b => b.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CancelAsync_LessonLaterToday_SucceedsAndFreesSlot()
+    {
+        var booking = GivenBooking(TeacherId, TestHelpers.Today, new TimeOnly(12, 30));
+
+        var result = await _service.CancelAsync(7, Teacher, CancellationToken.None);
+
+        Assert.Equal(ResultStatus.Success, result.Status);
+        Assert.False(booking.IsActive);
+        Assert.Equal(SlotStatus.Available, booking.RoomSlot.Status);
+        _bookings.Verify(b => b.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

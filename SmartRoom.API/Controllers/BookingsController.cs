@@ -51,7 +51,7 @@ public class BookingsController : ApiControllerBase
     public async Task<IActionResult> GetById([FromRoute] int id, CancellationToken ct) =>
         FromResult(await _bookingService.GetByIdAsync(id, CurrentUser, ct));
 
-    /// <summary>Cancels the booking and frees the slot, until the end of the day before the lesson.</summary>
+    /// <summary>Cancels the booking and frees the slot, until the lesson starts (also on the same day).</summary>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = AppRoles.SecretaryOrTeacher)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

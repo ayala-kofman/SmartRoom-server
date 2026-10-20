@@ -58,6 +58,24 @@ public class AuthServiceTests
     }
 
     [Fact]
+    public async Task LoginAsync_Teacher_ReturnsTokenAndTaughtClasses()
+    {
+        var teacher = new User
+        {
+            Id = 2, FullName = "Teacher", IdentityNumber = "200000008", Role = Core.Enums.UserRole.Teacher,
+            TaughtClassGroups = { new ClassGroup { Id = 3, Name = "י'1", Grade = 10 }, new ClassGroup { Id = 1, Name = "ט'1", Grade = 9 } }
+        };
+        _users.Setup(u => u.GetByIdentityNumberAsync("200000008", It.IsAny<CancellationToken>())).ReturnsAsync(teacher);
+        _tokens.Setup(t => t.Generate(teacher)).Returns(("token", DateTime.UtcNow.AddHours(1)));
+
+        var result = await _service.LoginAsync(new LoginRequest { IdentityNumber = "200000008" }, CancellationToken.None);
+
+        Assert.Equal(ResultStatus.Success, result.Status);
+        Assert.Equal("token", result.Value!.Token);
+        Assert.Equal(new[] { 1, 3 }, result.Value.TaughtClassGroups.Select(c => c.Id)); // ordered by grade
+    }
+
+    [Fact]
     public async Task RegisterAsync_IdNumberAlreadyExists_ReturnsConflictAndDoesNotAdd()
     {
         _referenceData.Setup(r => r.GetClassGroupsByIdsAsync(It.IsAny<IEnumerable<int>>(), It.IsAny<CancellationToken>()))

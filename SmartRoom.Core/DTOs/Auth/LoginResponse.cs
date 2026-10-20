@@ -1,3 +1,4 @@
+using SmartRoom.Core.DTOs.Users;
 using SmartRoom.Core.Enums;
 
 namespace SmartRoom.Core.DTOs.Auth;
@@ -14,4 +15,7 @@ public class LoginResponse
 
     /// <summary>The student's class; null for teachers and the secretary.</summary>
     public int? ClassGroupId { get; set; }
+
+    /// <summary>The classes a teacher teaches (for the class picker when booking); empty for others.</summary>
+    public List<ClassGroupDto> TaughtClassGroups { get; set; } = new();
 }

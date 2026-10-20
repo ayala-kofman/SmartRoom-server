@@ -34,6 +34,20 @@ public class BookingWindowServiceTests
         Assert.True(IsClosedAt(new DateTimeOffset(2026, 10, 23, 10, 0, 0, TimeSpan.Zero)));
     }
 
+    // The default clock is Wednesday 2026-10-21, 10:00 in Israel.
+    [Theory]
+    [InlineData(0, 9, 59, true)]   // today, a minute ago
+    [InlineData(0, 10, 0, true)]   // today, right now
+    [InlineData(0, 10, 1, false)]  // today, in a minute
+    [InlineData(-1, 17, 30, true)] // yesterday
+    [InlineData(1, 8, 0, false)]   // tomorrow
+    public void HasStarted_ComparesWithIsraelNow(int daysFromToday, int hour, int minute, bool expected)
+    {
+        var window = TestHelpers.Window(TestHelpers.Clock());
+
+        Assert.Equal(expected, window.HasStarted(TestHelpers.Today.AddDays(daysFromToday), new TimeOnly(hour, minute)));
+    }
+
     [Fact]
     public void GetBookableDate_OnWednesday_IsTomorrow()
     {

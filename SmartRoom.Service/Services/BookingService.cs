@@ -181,9 +181,9 @@ public class BookingService : IBookingService
         if (!booking.IsActive)
             return Result.Conflict("The booking is already cancelled.", ErrorCodes.AlreadyCancelled);
 
-        // Rule 7: until the end of the day before the lesson. Nothing changes today or in the past, for anyone.
-        if (booking.RoomSlot.Date <= _window.GetToday())
-            return Result.ValidationError("A booking can be cancelled only until the end of the day before the lesson.");
+        // Rule 7: until the lesson starts (also on the same day), for anyone. A lesson that began or ended stays as history.
+        if (_window.HasStarted(booking.RoomSlot.Date, booking.RoomSlot.LessonPeriod.StartTime))
+            return Result.ValidationError("A booking can be cancelled only before the lesson starts.");
 
         booking.IsActive = false;
         booking.CancelledAt = _time.GetUtcNow().UtcDateTime;
