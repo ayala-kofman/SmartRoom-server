@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using SmartRoom.Core.DTOs.Slots;
 using SmartRoom.Core.Entities;
 using SmartRoom.Core.Interfaces.Repositories;
@@ -17,6 +18,7 @@ public class BookingPeriodService : IBookingPeriodService
     private readonly IBookingWindowService _window;
     private readonly TimeProvider _time;
     private readonly IMapper _mapper;
+    private readonly ILogger<BookingPeriodService> _logger;
 
     public BookingPeriodService(
         IBookingPeriodRepository periods,
@@ -25,7 +27,8 @@ public class BookingPeriodService : IBookingPeriodService
         IReferenceDataRepository referenceData,
         IBookingWindowService window,
         TimeProvider time,
-        IMapper mapper)
+        IMapper mapper,
+        ILogger<BookingPeriodService> logger)
     {
         _periods = periods;
         _rooms = rooms;
@@ -34,6 +37,7 @@ public class BookingPeriodService : IBookingPeriodService
         _window = window;
         _time = time;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<Result<IReadOnlyList<BookingPeriodDto>>> GetAllAsync(CancellationToken ct)
@@ -82,6 +86,8 @@ public class BookingPeriodService : IBookingPeriodService
 
         // One save: the period and all its slots, in one transaction.
         await _periods.SaveChangesAsync(ct);
+        _logger.LogInformation("Booking period {PeriodId} ({StartDate:yyyy-MM-dd} to {EndDate:yyyy-MM-dd}) opened by user {UserId} with {SlotCount} new slots.",
+            period.Id, start, end, currentUser.Id, newSlots.Count);
 
         // Reload so the DTO has the name of the user who opened the period.
         var created = (await _periods.GetAllAsync(ct)).First(p => p.Id == period.Id);

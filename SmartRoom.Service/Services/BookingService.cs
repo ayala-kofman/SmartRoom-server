@@ -75,7 +75,11 @@ public class BookingService : IBookingService
             return Result<BookingDto>.Forbidden("You can book only for a class you teach.");
 
         if (slot.Status != SlotStatus.Available)
+        {
+            _logger.LogWarning("Booking conflict: slot {SlotId} is already booked; teacher {TeacherId} was refused.",
+                slotId, currentUser.Id);
             return Result<BookingDto>.Conflict(SlotTakenMessage, ErrorCodes.SlotTaken);
+        }
 
         if (slot.Room.Status != RoomStatus.Active)
             return Result<BookingDto>.Conflict("The room is not active and cannot be booked.", ErrorCodes.RoomNotActive);
@@ -108,6 +112,10 @@ public class BookingService : IBookingService
                 slotId, currentUser.Id);
             return Result<BookingDto>.Conflict(SlotTakenMessage, ErrorCodes.SlotTaken);
         }
+
+        _logger.LogInformation(
+            "Booking {BookingId} created: slot {SlotId} (room {RoomId}, {Date:yyyy-MM-dd}, lesson {LessonPeriodId}) by teacher {TeacherId} for class {ClassGroupId}.",
+            booking.Id, slotId, slot.RoomId, slot.Date, slot.LessonPeriodId, currentUser.Id, classGroupId);
 
         // Reloaded to get the teacher and class names for the DTO.
         var created = await _bookings.GetByIdAsync(booking.Id, ct);
@@ -142,6 +150,9 @@ public class BookingService : IBookingService
         }
 
         var page = await _bookings.GetPagedAsync(query, _paging.ResolvePageSize(query.PageSize), teacherId, classGroupId, ct);
+        _logger.LogDebug(
+            "Bookings query by {Role}: date {Date:yyyy-MM-dd}, from {FromDate:yyyy-MM-dd}, to {ToDate:yyyy-MM-dd}, teacher {TeacherId}, class {ClassGroupId}, page {Page}: {TotalCount} found.",
+            currentUser.Role, query.Date, query.FromDate, query.ToDate, teacherId, classGroupId, page.Page, page.TotalCount);
         return Result<PagedResult<BookingDto>>.Success(_mapper.MapPage<Booking, BookingDto>(page));
     }
 
@@ -192,6 +203,8 @@ public class BookingService : IBookingService
                 ErrorCodes.ConcurrentChange);
         }
 
+        _logger.LogInformation("Booking {BookingId} cancelled (slot {SlotId} is available again) by user {UserId} with role {Role}.",
+            id, booking.RoomSlotId, currentUser.Id, currentUser.Role);
         return Result.Success();
     }
 

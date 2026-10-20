@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SmartRoom.Core.DTOs.Common;
 using SmartRoom.Core.DTOs.Rooms;
@@ -21,6 +22,7 @@ public class RoomService : IRoomService
     private readonly IBookingWindowService _window;
     private readonly IMapper _mapper;
     private readonly PagingOptions _paging;
+    private readonly ILogger<RoomService> _logger;
 
     public RoomService(
         IRoomRepository rooms,
@@ -29,7 +31,8 @@ public class RoomService : IRoomService
         IReferenceDataRepository referenceData,
         IBookingWindowService window,
         IMapper mapper,
-        IOptions<PagingOptions> paging)
+        IOptions<PagingOptions> paging,
+        ILogger<RoomService> logger)
     {
         _rooms = rooms;
         _slots = slots;
@@ -38,11 +41,16 @@ public class RoomService : IRoomService
         _window = window;
         _mapper = mapper;
         _paging = paging.Value;
+        _logger = logger;
     }
 
     public async Task<Result<PagedResult<RoomDto>>> GetPagedAsync(RoomQuery query, CancellationToken ct)
     {
         var page = await _rooms.GetPagedAsync(query, _paging.ResolvePageSize(query.PageSize), ct);
+        _logger.LogDebug(
+            "Rooms query: type {RoomType}, floor {Floor}, min quality {MinQuality}, min capacity {MinCapacity}, status {Status}, features [{FeatureIds}], sort {SortBy} desc {Descending}, page {Page}: {TotalCount} found.",
+            query.RoomType, query.Floor, query.MinQuality, query.MinCapacity, query.Status, string.Join(",", query.FeatureIds),
+            query.SortBy, query.Descending, page.Page, page.TotalCount);
         return Result<PagedResult<RoomDto>>.Success(_mapper.MapPage<Room, RoomDto>(page));
     }
 
@@ -77,6 +85,7 @@ public class RoomService : IRoomService
 
         // One save: the room and its slots are created together or not at all.
         await _rooms.SaveChangesAsync(ct);
+        _logger.LogInformation("Room {RoomId} (number {RoomNumber}, {RoomType}) created.", room.Id, room.RoomNumber, request.RoomType);
 
         return Result<RoomDto>.Created(_mapper.Map<RoomDto>(room));
     }
@@ -110,6 +119,7 @@ public class RoomService : IRoomService
             await AddSlotsForOpenPeriodsAsync(room, ct);
 
         await _rooms.SaveChangesAsync(ct);
+        _logger.LogInformation("Room {RoomId} (number {RoomNumber}) updated; status {Status}.", room.Id, room.RoomNumber, room.Status);
         return Result.Success();
     }
 
@@ -129,6 +139,7 @@ public class RoomService : IRoomService
         // Its slots (all without bookings) are deleted with it by cascade.
         _rooms.Remove(room);
         await _rooms.SaveChangesAsync(ct);
+        _logger.LogInformation("Room {RoomId} (number {RoomNumber}) deleted.", id, room.RoomNumber);
         return Result.Success();
     }
 

@@ -12,6 +12,8 @@ public static class ErrorCodes
     public const string Unauthorized = "UNAUTHORIZED";
     public const string Forbidden = "FORBIDDEN";
     public const string Conflict = "CONFLICT";
+    public const string InternalError = "INTERNAL_ERROR";
+    public const string SiteClosed = "SITE_CLOSED";
 
     // Bookings
     public const string SlotTaken = "SLOT_TAKEN";

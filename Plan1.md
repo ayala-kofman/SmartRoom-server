@@ -351,14 +351,15 @@ SmartRoom היא מערכת Web API לשיבוץ חדרי לימוד, שבה מ�
 
 1. טיפול גלובלי בשגיאות (ראשון, כדי לתפוס הכול).
 2. CorrelationId — קורא מזהה מכותרת הבקשה או מייצר חדש, מחזיר אותו בכותרת התשובה, מכניס אותו ל-scope של הלוגים וכותב שורת לוג לכל בקשה נכנסת.
-3. Swagger (בפיתוח בלבד).
-4. HTTPS redirection.
-5. CORS — מאפשר רק את כתובת לקוח ה-React.
-6. Authentication.
-7. Authorization.
-8. Controllers.
+3. CORS — מאפשר רק את כתובת לקוח ה-React. נמצא לפני סגירת השבת, אחרת תשובת ה-503 יוצאת בלי כותרות CORS והדפדפן מסתיר אותה מהלקוח.
+4. סגירת שבת (ראו להלן).
+5. Swagger (בפיתוח בלבד).
+6. HTTPS redirection.
+7. Authentication.
+8. Authorization.
+9. Controllers.
 
-**Middleware סגירת שבת:** נכנס מיד אחרי ה-CorrelationId (כדי שגם בקשות שנחסמו יירשמו עם מזהה) ולפני כל השאר. בחלון השבת הוא עוצר כל בקשה — כולל התחברות — ומחזיר 503 במבנה ה-JSON האחיד, עם הודעה "האתר סגור בשבת" ושעת הפתיחה. נכתבת שורת לוג ברמת Information.
+**Middleware סגירת שבת:** נכנס אחרי ה-CorrelationId (כדי שגם בקשות שנחסמו יירשמו עם מזהה) ואחרי CORS, ולפני כל השאר. בחלון השבת הוא עוצר כל בקשה — כולל התחברות — ומחזיר 503 במבנה ה-JSON האחיד, עם הודעה "האתר סגור בשבת" ושעת הפתיחה. נכתבת שורת לוג ברמת Information.
 
 **Middleware השגיאות:** תופס כל חריגה שלא טופלה, כותב לוג Error, ומחזיר 500 במבנה ה-JSON האחיד עם ה-CorrelationId — ללא stack trace ללקוח. ביטול בקשה על ידי הלקוח (CancellationToken) מזוהה בנפרד ואינו נרשם כשגיאה.
 
@@ -522,24 +523,24 @@ SmartRoom היא מערכת Web API לשיבוץ חדרי לימוד, שבה מ�
 
 ### שלב 6 — Concurrency (הלב)
 
-- [ ] וידוא ש-Version מופיע בתנאי העדכון (בלוג SQL של EF ברמת Debug).
-- [ ] תפיסת חריגת ההתנגשות ותרגומה ל-409.
-- [ ] אינדקס הייחודי המסונן כרשת ביטחון.
-- [ ] ביטול הזמנה עם אותו מנגנון.
+- [x] וידוא ש-Version מופיע בתנאי העדכון (בלוג SQL של EF ברמת Debug). (נבדק: UPDATE "RoomSlots" SET "Status", "Version" WHERE "Id" = @p AND "Version" = @p — עם ה-Version המקורי; בדיקה 11/11)
+- [x] תפיסת חריגת ההתנגשות ותרגומה ל-409. (RepositoryBase → ConcurrencyConflictException → BookingService Conflict + Warning → 409)
+- [x] אינדקס הייחודי המסונן כרשת ביטחון. (IX_Bookings_RoomSlotId_Active, "IsActive" = TRUE; נבדק שחוסם הזמנה פעילה שנייה ומתיר הזמנה חדשה אחרי ביטול)
+- [x] ביטול הזמנה עם אותו מנגנון. (נבדק: ביטול כפול במקביל — השני נתפס ע"י ה-Version)
 
 ### שלב 7 — Middleware ו-NLog
 
-- [ ] Middleware השגיאות ומבנה תשובה אחיד (כולל 400 של ולידציה).
-- [ ] Middleware ה-CorrelationId.
-- [ ] nlog.config וחיבור ב-Program.
-- [ ] שורות לוג במקומות מהטבלה בפרק 8, ובדיקה שאין סודות בלוג.
-- [ ] סדר ה-pipeline לפי פרק 8.
+- [x] Middleware השגיאות ומבנה תשובה אחיד (כולל 400 של ולידציה). (ExceptionHandlingMiddleware → 500 INTERNAL_ERROR; 400/401/403 ב-ErrorResponse; שמות שדות ב-camelCase; בדיקה 19/19)
+- [x] Middleware ה-CorrelationId. (X-Correlation-ID מהבקשה או GUID חדש; בכותרת התשובה, ב-TraceIdentifier וב-scope; שורת לוג לכל בקשה)
+- [x] nlog.config וחיבור ב-Program. (NLog.Web.AspNetCore 6.2.2; קובץ יומי ב-SmartRoom.API/logs + קונסולה; רמות ב-appsettings — Debug לקוד שלנו בפיתוח, Warning ל-Microsoft; נבדק בהרצה אמיתית)
+- [x] שורות לוג במקומות מהטבלה בפרק 8, ובדיקה שאין סודות בלוג. (Information: הזמנה נוצרה/בוטלה, חדר נוצר/עודכן/נמחק, תקופה נפתחה; Warning: משבצת תפוסה גם בבדיקה המוקדמת; Debug: סינוני חדרים/משבצות/הזמנות; תאריכים yyyy-MM-dd; אין ת"ז/token/סיסמה בלוג; בדיקה 13/13)
+- [x] סדר ה-pipeline לפי פרק 8. (Exception → CorrelationId → CORS → שבת → Swagger → HTTPS → Authentication → Authorization → Controllers; בדיקה כוללת של שלב 7: 20/20)
 
 ### שלב 8 — בדיקות
 
-- [ ] בדיקות היחידה מפרק 9.
-- [ ] בדיקת שני ה-DbContext.
-- [ ] כל הבדיקות עוברות בריצה אחת משורת הפקודה.
+- [x] בדיקות היחידה מפרק 9. (xUnit + Moq; BookingService 16, RoomService 6, AuthService 5, חלון שבת 8 — עם FakeTimeProvider ו-AutoMapper האמיתי)
+- [x] בדיקת שני ה-DbContext. (SQLite בזיכרון: שני קונטקסטים → DbUpdateConcurrencyException; אותו מרוץ דרך RoomSlotRepository → ConcurrencyConflictException; בדיקת ביקורת: שמירה כפולה באותו קונטקסט לא נכשלת)
+- [x] כל הבדיקות עוברות בריצה אחת משורת הפקודה. (dotnet test בתיקיית ה-solution: 38/38)
 
 ### שלב 9 — לקוח React
 
