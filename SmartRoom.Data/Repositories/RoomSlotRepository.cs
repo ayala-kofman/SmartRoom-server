@@ -15,7 +15,7 @@ public class RoomSlotRepository : RepositoryBase, IRoomSlotRepository
     }
 
     public async Task<PagedResult<RoomSlot>> GetPagedAsync(
-        RoomSlotQuery query, int pageSize, bool availableOnly, CancellationToken ct)
+        RoomSlotQuery query, int pageSize, bool availableOnly, DateTime? startsAfter, CancellationToken ct)
     {
         IQueryable<RoomSlot> slots = Db.RoomSlots
             .AsNoTracking()
@@ -42,6 +42,14 @@ public class RoomSlotRepository : RepositoryBase, IRoomSlotRepository
         var status = availableOnly ? SlotStatus.Available : query.Status;
         if (status is SlotStatus slotStatus)
             slots = slots.Where(s => s.Status == slotStatus);
+
+        // Today's lessons that already started cannot be booked, so they are not shown.
+        if (startsAfter is DateTime now)
+        {
+            var today = DateOnly.FromDateTime(now);
+            var time = TimeOnly.FromDateTime(now);
+            slots = slots.Where(s => s.Date > today || (s.Date == today && s.LessonPeriod.StartTime > time));
+        }
 
         // Earliest first; within the same lesson, best room first.
         slots = slots

@@ -12,9 +12,18 @@ public interface IBookingWindowService
     /// <summary>Today's date in school time.</summary>
     DateOnly GetToday();
 
-    /// <summary>The only date that may be booked now (today + DaysAhead).</summary>
+    /// <summary>Now in school time.</summary>
+    DateTime GetSchoolNow();
+
+    /// <summary>The last date that may be booked now (today + DaysAhead).</summary>
     DateOnly GetBookableDate();
 
     /// <summary>True once the lesson that starts at this date and time (school time) has begun, or is in the past.</summary>
     bool HasStarted(DateOnly date, TimeOnly startTime);
+
+    /// <summary>
+    /// True for a lesson from today up to GetBookableDate that has not started yet,
+    /// so a lesson later today can still be booked.
+    /// </summary>
+    bool CanBook(DateOnly date, TimeOnly startTime);
 }

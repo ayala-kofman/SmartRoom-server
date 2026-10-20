@@ -7,8 +7,10 @@ namespace SmartRoom.Core.Interfaces.Repositories;
 public interface IRoomSlotRepository
 {
     /// <summary>Filtered page of slots with room and lesson period (no tracking).
-    /// availableOnly = true for a teacher, regardless of query.Status.</summary>
-    Task<PagedResult<RoomSlot>> GetPagedAsync(RoomSlotQuery query, int pageSize, bool availableOnly, CancellationToken ct);
+    /// availableOnly = true for a teacher, regardless of query.Status.
+    /// startsAfter (school time): when set, lessons that already started are left out.</summary>
+    Task<PagedResult<RoomSlot>> GetPagedAsync(
+        RoomSlotQuery query, int pageSize, bool availableOnly, DateTime? startsAfter, CancellationToken ct);
 
     /// <summary>One slot with room and lesson period, read only. Null if not found.</summary>
     Task<RoomSlot?> GetByIdAsync(int id, CancellationToken ct);

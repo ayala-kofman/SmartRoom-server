@@ -82,6 +82,24 @@ public class BookingServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_LessonLaterToday_ReturnsCreated()
+    {
+        // The clock is 10:00, the lesson starts at 12:30 the same day.
+        var slot = Slot(TestHelpers.Today, startTime: new TimeOnly(12, 30));
+        GivenSlot(slot);
+        Booking? added = null;
+        _bookings.Setup(b => b.AddAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
+            .Callback<Booking, CancellationToken>((b, _) => added = b);
+        _bookings.Setup(b => b.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => added);
+
+        var result = await _service.CreateAsync(Request(), Teacher, CancellationToken.None);
+
+        Assert.Equal(ResultStatus.Created, result.Status);
+        Assert.Equal(SlotStatus.Booked, slot.Status);
+    }
+
+    [Fact]
     public async Task CreateAsync_SlotAlreadyBooked_ReturnsConflictAndDoesNotSave()
     {
         GivenSlot(Slot(TestHelpers.Tomorrow, SlotStatus.Booked));
@@ -123,12 +141,13 @@ public class BookingServiceTests
     }
 
     [Theory]
-    [InlineData(-1)] // yesterday
-    [InlineData(0)]  // today
-    [InlineData(2)]  // the day after tomorrow
-    public async Task CreateAsync_SlotNotTomorrow_ReturnsValidationError(int daysFromToday)
+    [InlineData(-1, 12, 30)] // yesterday
+    [InlineData(0, 8, 50)]   // today, the lesson started at 08:50
+    [InlineData(0, 10, 0)]   // today, the lesson starts right now
+    [InlineData(2, 8, 50)]   // the day after tomorrow
+    public async Task CreateAsync_LessonStartedOrOutOfWindow_ReturnsValidationError(int daysFromToday, int hour, int minute)
     {
-        GivenSlot(Slot(TestHelpers.Today.AddDays(daysFromToday)));
+        GivenSlot(Slot(TestHelpers.Today.AddDays(daysFromToday), startTime: new TimeOnly(hour, minute)));
 
         var result = await _service.CreateAsync(Request(), Teacher, CancellationToken.None);
 

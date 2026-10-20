@@ -40,5 +40,8 @@ public class BookingWindowService : IBookingWindowService
 
     public bool HasStarted(DateOnly date, TimeOnly startTime) => date.ToDateTime(startTime) <= GetSchoolNow();
 
-    private DateTime GetSchoolNow() => TimeZoneInfo.ConvertTime(_time.GetUtcNow(), _schoolZone).DateTime;
+    public bool CanBook(DateOnly date, TimeOnly startTime) =>
+        date <= GetBookableDate() && !HasStarted(date, startTime);
+
+    public DateTime GetSchoolNow() => TimeZoneInfo.ConvertTime(_time.GetUtcNow(), _schoolZone).DateTime;
 }

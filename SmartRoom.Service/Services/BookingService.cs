@@ -67,9 +67,9 @@ public class BookingService : IBookingService
             return Result<BookingDto>.NotFound($"Slot {slotId} was not found.");
 
         // 2. Business checks. Date and permission come first, so a past slot is not reported as "taken".
-        var bookableDate = _window.GetBookableDate();
-        if (slot.Date != bookableDate)
-            return Result<BookingDto>.ValidationError($"Only slots of {bookableDate:yyyy-MM-dd} can be booked now.");
+        if (!_window.CanBook(slot.Date, slot.LessonPeriod.StartTime))
+            return Result<BookingDto>.ValidationError(
+                $"Only lessons that have not started yet, up to {_window.GetBookableDate():yyyy-MM-dd}, can be booked.");
 
         if (!await _users.TeacherTeachesClassAsync(currentUser.Id, classGroupId, ct))
             return Result<BookingDto>.Forbidden("You can book only for a class you teach.");

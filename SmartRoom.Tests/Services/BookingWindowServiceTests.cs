@@ -56,4 +56,19 @@ public class BookingWindowServiceTests
         Assert.Equal(TestHelpers.Today, window.GetToday());
         Assert.Equal(TestHelpers.Tomorrow, window.GetBookableDate());
     }
+
+    // The default clock is Wednesday 2026-10-21, 10:00 in Israel.
+    [Theory]
+    [InlineData(0, 10, 1, true)]   // today, starts in a minute
+    [InlineData(0, 10, 0, false)]  // today, starts right now
+    [InlineData(0, 8, 0, false)]   // today, already started
+    [InlineData(1, 8, 0, true)]    // tomorrow
+    [InlineData(2, 8, 0, false)]   // the day after tomorrow
+    [InlineData(-1, 17, 30, false)] // yesterday
+    public void CanBook_TodayBeforeTheLessonOrTomorrow(int daysFromToday, int hour, int minute, bool expected)
+    {
+        var window = TestHelpers.Window(TestHelpers.Clock());
+
+        Assert.Equal(expected, window.CanBook(TestHelpers.Today.AddDays(daysFromToday), new TimeOnly(hour, minute)));
+    }
 }
