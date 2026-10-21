@@ -161,7 +161,17 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClient", policy =>
+    {
+        policy.WithOrigins(
+                "https://smartroom-client.onrender.com",
+                "http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 var app = builder.Build();
 
 // Create / migrate the database and seed demo data on startup, with no manual DB steps.
@@ -187,7 +197,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowClient");
 app.UseAuthentication();
 app.UseAuthorization();
 
